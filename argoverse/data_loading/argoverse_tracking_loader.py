@@ -70,7 +70,7 @@ class ArgoverseTrackingLoader:
         # lidar @10hz, ring camera @30hz, stereo camera @5hz
         self.num_lidar_frame: int = len(self.lidar_timestamp_list)
         self.num_ring_camera_frame: int = len(self.image_timestamp_list[RING_CAMERA_LIST[0]])
-        self.num_stereo_camera_frame: int = len(self.image_timestamp_list[STEREO_CAMERA_LIST[0]])
+        self.num_stereo_camera_frame: int = 0 #len(self.image_timestamp_list[STEREO_CAMERA_LIST[0]])
 
         self.sync: SynchronizationDB = SynchronizationDB(root_dir)
 
@@ -342,7 +342,7 @@ class ArgoverseTrackingLoader:
             self.current_log = self.log_list[self.counter]
             self.num_lidar_frame = len(self.lidar_timestamp_list)
             self.num_ring_camera_frame = len(self.image_timestamp_list[RING_CAMERA_LIST[0]])
-            self.num_stereo_camera_frame = len(self.image_timestamp_list[STEREO_CAMERA_LIST[0]])
+            self.num_stereo_camera_frame = 0 #len(self.image_timestamp_list[STEREO_CAMERA_LIST[0]])
             return self
 
     def __len__(self) -> int:
@@ -379,7 +379,7 @@ Total bounding box: {sum(num_annotations)}
         self.current_log = self.log_list[self.counter]
         self.num_lidar_frame = len(self.lidar_timestamp_list)
         self.num_ring_camera_frame = len(self.image_timestamp_list[RING_CAMERA_LIST[0]])
-        self.num_stereo_camera_frame = len(self.image_timestamp_list[STEREO_CAMERA_LIST[0]])
+        self.num_stereo_camera_frame = 0 # len(self.image_timestamp_list[STEREO_CAMERA_LIST[0]])
         return self
 
     def get(self, log_id: str) -> "ArgoverseTrackingLoader":
@@ -393,7 +393,7 @@ Total bounding box: {sum(num_annotations)}
         self.current_log = log_id
         self.num_lidar_frame = len(self.lidar_timestamp_list)
         self.num_ring_camera_frame = len(self.image_timestamp_list[RING_CAMERA_LIST[0]])
-        self.num_stereo_camera_frame = len(self.image_timestamp_list[STEREO_CAMERA_LIST[0]])
+        self.num_stereo_camera_frame = 0 # len(self.image_timestamp_list[STEREO_CAMERA_LIST[0]])
         return self
 
     def get_image_list(self, camera: str, log_id: Optional[str] = None, load: bool = False) -> List[str]:
@@ -440,11 +440,7 @@ Total bounding box: {sum(num_annotations)}
         return self._image_list_sync[log_id][camera]
 
     def get_image_at_timestamp(
-        self,
-        timestamp: int,
-        camera: str,
-        log_id: Optional[str] = None,
-        load: bool = True,
+        self, timestamp: int, camera: str, log_id: Optional[str] = None, load: bool = True
     ) -> Optional[Union[str, np.ndarray]]:
         """get image or image path at a specific timestamp
 

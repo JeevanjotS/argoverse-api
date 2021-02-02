@@ -40,6 +40,13 @@ ROI_ISOCONTOUR = 5.0
 # known City IDs from newest to oldest
 MIAMI_ID = 10316
 PITTSBURGH_ID = 10314
+#nuscenes cities
+SINGAPORE_QUEENSTOWN_ID = 10324
+SINGAPORE_ONENORTH_ID = 10322
+SINGAPORE_HOLLANDVILLAGE_ID = 10320
+BOSTON_SEAPORT_ID = 10318
+
+
 
 ROOT = Path(__file__).resolve().parent.parent.parent  # ../../..
 MAP_FILES_ROOT = ROOT / "map_files"
@@ -52,11 +59,17 @@ class ArgoverseMap:
     """
     This class provides the interface to our vector maps and rasterized maps. Exact lane boundaries
     are not provided, but can be hallucinated if one considers an average lane width.
+
+    Args:
+        mode: Denotes whether we are working with argoverse or nuscenes dataset ("ARGO" or "NUSC")
     """
 
-    def __init__(self) -> None:
+    def __init__(self, is_nuscenes = False) -> None:
         """ Initialize the Argoverse Map. """
-        self.city_name_to_city_id_dict = {"PIT": PITTSBURGH_ID, "MIA": MIAMI_ID}
+        self.is_nuscenes = is_nuscenes
+        self.city_name_to_city_id_dict = {"PIT": PITTSBURGH_ID, "MIA": MIAMI_ID} if not is_nuscenes else {"BSP": BOSTON_SEAPORT_ID, "SHV": SINGAPORE_HOLLANDVILLAGE_ID,
+                                                   "SON": SINGAPORE_ONENORTH_ID, "SQT": SINGAPORE_QUEENSTOWN_ID}
+
         self.render_window_radius = 150
         self.im_scale_factor = 50
 
@@ -65,8 +78,8 @@ class ArgoverseMap:
             self.city_halluc_bbox_table,
             self.city_halluc_tableidx_to_laneid_map,
         ) = self.build_hallucinated_lane_bbox_index()
-        self.city_rasterized_da_roi_dict = self.build_city_driveable_area_roi_index()
-        self.city_rasterized_ground_height_dict = self.build_city_ground_height_index()
+        #self.city_rasterized_da_roi_dict = self.build_city_driveable_area_roi_index()
+        #self.city_rasterized_ground_height_dict = self.build_city_ground_height_index()
 
         # get hallucinated lane extends and driveable area from binary img
         self.city_to_lane_polygons_dict: Mapping[str, np.ndarray] = {}
@@ -76,14 +89,14 @@ class ArgoverseMap:
 
         for city_name in self.city_name_to_city_id_dict.keys():
             lane_polygons = np.array(self.get_vector_map_lane_polygons(city_name))
-            driveable_areas = np.array(self.get_vector_map_driveable_areas(city_name))
+            #driveable_areas = np.array(self.get_vector_map_driveable_areas(city_name))
             lane_bboxes = compute_polygon_bboxes(lane_polygons)
-            da_bboxes = compute_polygon_bboxes(driveable_areas)
+            #da_bboxes = compute_polygon_bboxes(driveable_areas)
 
             self.city_to_lane_polygons_dict[city_name] = lane_polygons
-            self.city_to_driveable_areas_dict[city_name] = driveable_areas
+            #self.city_to_driveable_areas_dict[city_name] = driveable_areas
             self.city_to_lane_bboxes_dict[city_name] = lane_bboxes
-            self.city_to_da_bboxes_dict[city_name] = da_bboxes
+            #self.city_to_da_bboxes_dict[city_name] = da_bboxes
 
     def get_vector_map_lane_polygons(self, city_name: str) -> List[np.ndarray]:
         """
@@ -159,7 +172,7 @@ class ArgoverseMap:
         """
         city_lane_centerlines_dict = {}
         for city_name, city_id in self.city_name_to_city_id_dict.items():
-            xml_fpath = MAP_FILES_ROOT / f"pruned_argoverse_{city_name}_{city_id}_vector_map.xml"
+            xml_fpath = MAP_FILES_ROOT / f"pruned_argoverse_{city_name}_{city_id}_vector_map.xml" if not self.is_nuscenes else MAP_FILES_ROOT / f"pruned_nuscenes_{city_name}_{city_id}_vector_map.xml"
             city_lane_centerlines_dict[city_name] = load_lane_segments_from_xml(xml_fpath)
 
         return city_lane_centerlines_dict
@@ -208,7 +221,6 @@ class ArgoverseMap:
 
             # load the file with rasterized values
             city_rasterized_ground_height_dict[city_name]["ground_height"] = np.load(npy_fpath)
-
             se2_npy_fpath = MAP_FILES_ROOT / f"{city_name}_{city_id}_npyimage_to_city_se2_2019_05_28.npy"
             city_rasterized_ground_height_dict[city_name]["npyimage_to_city_se2"] = np.load(se2_npy_fpath)
 
@@ -386,6 +398,8 @@ class ArgoverseMap:
         Returns:
             ground_height_values: Numpy array of shape (k,)
         """
+        if self.is_nuscenes:
+            return np.zeros(point_cloud.shape[0])
         ground_height_mat, npyimage_to_city_se2_mat = self.get_rasterized_ground_height(city_name)
         city_coords = np.round(point_cloud[:, :2]).astype(np.int64)
 
@@ -418,6 +432,7 @@ class ArgoverseMap:
         Returns:
             pt_cloud_xyz: Numpy array of shape (N,3)
         """
+
         pts_z = self.get_ground_height_at_xy(pt_cloud_xy, city_name)
         return np.hstack([pt_cloud_xy, pts_z[:, np.newaxis]])
 

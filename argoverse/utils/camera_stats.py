@@ -19,13 +19,13 @@ RING_CAMERA_LIST = [
     "ring_front_center",
     "ring_front_left",
     "ring_front_right",
-    "ring_rear_left",
-    "ring_rear_right",
+    # "ring_rear_left",
+    # "ring_rear_right",
     "ring_side_left",
     "ring_side_right",
 ]
 
-STEREO_CAMERA_LIST = ["stereo_front_left", "stereo_front_right"]
+STEREO_CAMERA_LIST = [] # ["stereo_front_left", "stereo_front_right"]
 
 CAMERA_LIST = RING_CAMERA_LIST + STEREO_CAMERA_LIST
 
@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 
 
 def get_image_dims_for_camera(camera_name: str) -> Tuple[Optional[int], Optional[int]]:
-    """Get image dimensions for camera.
+    """ Get image dimensions for camera.
     Args:
         camera_name: Camera name.
 

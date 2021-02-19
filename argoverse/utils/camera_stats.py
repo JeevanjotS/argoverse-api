@@ -12,8 +12,8 @@ fix the image size throughout -- must be adaptive.
 STEREO_IMG_WIDTH = 2464
 STEREO_IMG_HEIGHT = 2056
 
-RING_IMG_WIDTH = 1920
-RING_IMG_HEIGHT = 1200
+RING_IMG_WIDTH = 1600
+RING_IMG_HEIGHT = 900
 
 RING_CAMERA_LIST = [
     "ring_front_center",

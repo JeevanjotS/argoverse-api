@@ -144,14 +144,14 @@ def eliminate_duplicates_2d(px: np.ndarray, py: np.ndarray) -> Tuple[np.ndarray,
     shared_dup_inds = np.intersect1d(px_dup_inds, py_dup_inds)
 
     if shared_dup_inds.size > 0:
-        assert shared_dup_inds.size < 2
-        shared_dup_inds = int(shared_dup_inds)
-        # enforce that must be consecutive indices
-        assert_consecutive(shared_dup_inds, num_pts, px)
-        assert_consecutive(shared_dup_inds, num_pts, py)
+        #print(shared_dup_inds)
+        #assert shared_dup_inds.size < 2
+        for idx in shared_dup_inds:
+            assert_consecutive(idx, num_pts, px)
+            assert_consecutive(idx, num_pts, py)
 
-        px = np.delete(px, [shared_dup_inds])
-        py = np.delete(py, [shared_dup_inds])
+        px = np.delete(px, shared_dup_inds)
+        py = np.delete(py, shared_dup_inds)
 
     return px, py
 
